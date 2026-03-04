@@ -1,9 +1,8 @@
-import { getRandomImages } from '@/lib/api';
 import ImageGrid from '@/components/ImageGrid';
 import Pagination from '@/components/Pagination';
 import { redirect } from 'next/navigation';
 
-// Force dynamic rendering so each page visit fetches fresh images
+// Force dynamic rendering so each page visit gets a fresh page key
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
@@ -26,9 +25,6 @@ export default async function GalleryPage({ params }: PageProps) {
     if (isNaN(pageNumber) || pageNumber < 1) {
         redirect('/page/1');
     }
-
-    // Fetch 9 images concurrently for the 3×3 grid
-    const images = await getRandomImages(9, 'catgirl');
 
     return (
         <main style={{ minHeight: '100vh' }}>
@@ -58,9 +54,9 @@ export default async function GalleryPage({ params }: PageProps) {
                 </div>
             </header>
 
-            {/* Gallery Grid */}
+            {/* Gallery Grid — client-side fetching with skeleton loading */}
             <section style={{ maxWidth: '72rem', margin: '0 auto', padding: '0 1.5rem' }}>
-                <ImageGrid images={images} />
+                <ImageGrid pageKey={pageNumber} />
             </section>
 
             {/* Pagination */}

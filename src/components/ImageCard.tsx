@@ -10,6 +10,7 @@ interface ImageCardProps {
 
 export default function ImageCard({ image, index }: ImageCardProps) {
     const [downloading, setDownloading] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     const handleDownload = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -17,6 +18,7 @@ export default function ImageCard({ image, index }: ImageCardProps) {
 
         setDownloading(true);
         try {
+            // Always download from the original full-res URL
             const res = await fetch(`/api/download?url=${encodeURIComponent(image.url)}`);
             if (!res.ok) throw new Error('Download failed');
 
@@ -43,17 +45,34 @@ export default function ImageCard({ image, index }: ImageCardProps) {
             style={{ animationDelay: `${index * 70}ms` }}
         >
             {/* Aspect ratio container */}
-            <div style={{ position: 'relative', aspectRatio: '3/4', width: '100%', overflow: 'hidden' }}>
+            <div style={{ position: 'relative', aspectRatio: '3/4', width: '100%', overflow: 'hidden', backgroundColor: '#1f2937' }}>
+
+                {/* Pulsating skeleton — visible until the image loads */}
+                {!imageLoaded && (
+                    <div
+                        className="shimmer-placeholder"
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            zIndex: 4,
+                        }}
+                    />
+                )}
+
+                {/* Standard Image Tag */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                     src={image.url}
                     alt={image.tags?.slice(0, 3).join(', ') || 'Anime catgirl wallpaper'}
-                    loading="lazy"
+                    loading={index < 3 ? "eager" : "lazy"}
+                    onLoad={() => setImageLoaded(true)}
                     style={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
                         display: 'block',
+                        opacity: imageLoaded ? 1 : 0,
+                        transition: 'opacity 0.5s ease-in-out',
                     }}
                 />
 
